@@ -165,7 +165,7 @@ textarea{min-height:110px;resize:vertical;font-family:Menlo,Consolas,monospace;f
   <div class="arac"><span>📲 QR ile paylaş</span><button id="qrAc">Göster</button></div>
   <div class="arac"><span>🔗 Linki kopyala</span><button id="linkKopya">Kopyala</button></div>
   <div class="arac"><span>📺 Ekran modu</span><button id="ekranMod">Otomatik</button></div>
-  <div class="arac"><span>🏷️ Sürüm</span><span style="color:var(--soluk)">3 · Kayıtlarım</span></div>
+  <div class="arac"><span>🏷️ Sürüm</span><span style="color:var(--soluk)">v17 · 16 Kasım 2026</span></div>
   <div id="qrKutu"><img id="qrImg" alt="QR"><div style="color:#111;font-size:13px;margin-top:6px" id="qrNot"></div></div>
   <div class="not" style="margin-top:14px">Telif notu: Başkasına ait bir şarkıyı (ör. ünlü sanatçılar) videoya gömersen Instagram/TikTok sesi kapatabilir. Öyle şarkılarda klibi kendi sesinle ya da sessiz yap, şarkıyı uygulamanın müzik kütüphanesinden ekle.</div>
   <button class="btn" id="ayarKapat">Kapat</button>
@@ -420,6 +420,10 @@ function ekran(t,f,amp){
 }
 
 /* ---------- sahne ---------- */
+const SITE_VARSAYILAN='baris-ogretmen.github.io/site-1';
+function siteYazi(){return ((S.site||'').trim())||SITE_VARSAYILAN;}
+function renkliSite(x,y,fs,t,hiz){const site=siteYazi();cx.save();cx.font='800 '+fs+'px "Helvetica Neue", Inter, "DejaVu Sans", Arial, sans-serif';cx.textAlign='left';cx.textBaseline='middle';
+  let xx=x-cx.measureText(site).width/2;for(let i=0;i<site.length;i++){const hue=(i*360/site.length+t*(hiz||60))%360;cx.shadowColor='hsla('+hue+',100%,60%,.85)';cx.shadowBlur=fs*.45;cx.fillStyle='hsl('+hue+',95%,68%)';cx.fillText(site[i],xx,y);xx+=cx.measureText(site[i]).width;}cx.restore();}
 function cizKod(t){
   t=Math.max(0,Math.min(S.dur,t));const f=Math.min(S.rms.length-1,Math.floor(t*FPS));
   const amp=S.rms.length?Math.min(1,(S.rms[Math.max(0,f)]||0)/S.peakR):0;
@@ -444,7 +448,7 @@ function cizKod(t){
   ik.forEach((c,i)=>{cx.fillStyle=c;cx.globalAlpha=.85;const x=-300+i*62;cx.beginPath();if(cx.roundRect)cx.roundRect(x,0,32,32,8);else cx.rect(x,0,32,32);cx.fill();});cx.globalAlpha=1;
   cx.restore();
   // menteşe ışığı
-  cx.strokeStyle=renk(t*40%360,85,.9);cx.lineWidth=5;cx.beginPath();cx.ellipse(560,1255,26,10,-.05,0,Math.PI*2);cx.stroke();
+  renkliSite(545,1222,30,t);cx.strokeStyle=renk(t*40%360,85,.9);cx.lineWidth=5;cx.beginPath();cx.ellipse(560,1262,26,10,-.05,0,Math.PI*2);cx.stroke();
   klavye(t,amp);
   const v=cx.createRadialGradient(540,960,400,540,960,1250);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.6)');cx.fillStyle=v;cx.fillRect(0,0,W,H);
 }
@@ -550,8 +554,8 @@ function cizCalar(t){t=Math.max(0,Math.min(S.dur,t));const P=paletCalar();const 
   const sonEv=ev[ev.length-1];if(t>sonEv.t){const a=Math.min(1,(t-sonEv.t)/.8);cx.globalAlpha=a;cx.fillStyle=P.vur;cx.font='italic 600 40px '+SANS;cx.fillText('— '+sanatci(),PX+90,cy+ch-120);cx.fillStyle='rgba(255,255,255,.85)';cx.font='500 30px '+SANS;cx.fillText('baris-ogretmen.github.io/site-1',PX+90,cy+ch-70);cx.globalAlpha=1;}
   cx.restore();
   const sy=PY+PH-80;cx.fillStyle='rgba(255,255,255,.08)';rr(PX+40,sy-30,PW-80,80,26);cx.fill();
-  cx.textAlign='left';cx.fillStyle='#fff';cx.font='600 26px '+SANS;cx.fillText('♪ Kayıtlarım',PX+75,sy+19);
-  for(let b=0;b<NB;b++){const h=6+bd[b]*44;cx.fillStyle='hsla('+(P.hue+b*1.2)+',80%,'+(65+bd[b]*15)+'%,.95)';rr(PX+300+b*22,sy+10-h/2,12,h,5);cx.fill();}
+  cx.textAlign='left';cx.fillStyle='#fff';cx.font='600 26px '+SANS;renkliSite(PX+260,sy+10,24,t);
+  for(let b=0;b<NB;b++){const h=6+bd[b]*44;cx.fillStyle='hsla('+(P.hue+b*1.2)+',80%,'+(65+bd[b]*15)+'%,.95)';rr(PX+500+b*12.5,sy+10-h/2,7,h,3);cx.fill();}
   cx.restore();cx.restore();
   const v=cx.createRadialGradient(540,960,500,540,960,1200);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');cx.fillStyle=v;cx.fillRect(0,0,W,H);}
 
@@ -598,7 +602,7 @@ function cizSinema(t){t=Math.max(0,Math.min(S.dur,t));const f=Math.min(S.rms.len
   cx.globalAlpha=ta;
   // zarif ses çizgisi
   const vy=H-110,vw=760,n=NB*2;cx.beginPath();for(let i=0;i<=n;i++){const k=i<=NB?i:2*NB-i,b=bd[Math.min(NB-1,Math.floor(k))]||0;const x=W/2-vw/2+i*vw/n,yy=vy-(b*46*Math.sin(Math.PI*i/n))*(i%2?1:-1);i?cx.lineTo(x,yy):cx.moveTo(x,yy);}
-  cx.strokeStyle='rgba(255,236,210,.9)';cx.lineWidth=2.4;cx.shadowColor='rgba(255,200,140,.9)';cx.shadowBlur=14;cx.stroke();cx.shadowBlur=0;
+  renkliSite(W/2,H-52,30,t);cx.strokeStyle='rgba(255,236,210,.9)';cx.lineWidth=2.4;cx.shadowColor='rgba(255,200,140,.9)';cx.shadowBlur=14;cx.stroke();cx.shadowBlur=0;
   cx.globalAlpha=1;
   // açılış/kapanış kararması
   const giris=Math.max(0,1-t/1.2),cikis=Math.max(0,Math.min(1,(t-(S.dur-2.2))/2.2));
@@ -643,7 +647,7 @@ function cizNokta(t){t=Math.max(0,Math.min(S.dur,t));const f=Math.min(S.rms.leng
     if(m){cx.fillText(m[1].trim().toLocaleLowerCase('tr').split('').join(' '),W/2,H-125);cx.fillStyle='rgba(255,246,232,.95)';cx.font='italic 400 58px '+SERIF;cx.fillText(m[2],W/2,H-68);}
     else{cx.font='italic 400 58px '+SERIF;cx.fillStyle='rgba(255,246,232,.95)';cx.fillText(imza,W/2,H-80);}}
   cx.globalAlpha=1;
-  const v=cx.createRadialGradient(W/2,H/2,W*.5,W/2,H/2,H*.78);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');cx.fillStyle=v;cx.fillRect(0,0,W,H);}
+  renkliSite(W/2,H-28,26,t);const v=cx.createRadialGradient(W/2,H/2,W*.5,W/2,H/2,H*.78);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');cx.fillStyle=v;cx.fillRect(0,0,W,H);}
 
 /* ---------- 🔷 ÇİNİ AYNA: fotoğraf karolara bölünür, karolar dönüp çini desenine geçer ---------- */
 const CT=120,CC=Math.ceil(W/CT),CR=Math.ceil(H/CT);let CINI_DESEN=null,CINI_DALGA=null,CINI_DUR=-1;
@@ -690,7 +694,7 @@ function cizCini(t){t=Math.max(0,Math.min(S.dur,t));const f=Math.min(S.rms.lengt
     cx.textAlign='center';cx.fillStyle='#1d4f9c';const yer=(S.alt||'').trim(),imza=(S.imza||'').trim(),bas=(S.baslik||'').trim();
     cx.font='italic 400 70px '+SERIF;cx.fillText(bas||yer||'',W/2,by+120);cx.font='500 28px '+SANS;cx.fillStyle='#1597a0';
     const m=imza.match(/^(.*?)[·:]\s*(.*)$/);cx.fillText((m?m[1].trim():'').toLocaleLowerCase('tr').split('').join(' '),W/2,by+185);cx.fillStyle='#c2412d';cx.font='italic 400 54px '+SERIF;cx.fillText(m?m[2]:imza,W/2,by+245);cx.globalAlpha=1;}
-  const v=cx.createRadialGradient(W/2,H/2,W*.55,W/2,H/2,H*.8);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.45)');cx.fillStyle=v;cx.fillRect(0,0,W,H);
+  {cx.fillStyle='rgba(10,12,28,.6)';cx.fillRect(0,H-90,W,90);renkliSite(W/2,H-45,32,t);}const v=cx.createRadialGradient(W/2,H/2,W*.55,W/2,H/2,H*.8);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.45)');cx.fillStyle=v;cx.fillRect(0,0,W,H);
   if(t<.8){cx.fillStyle='rgba(0,0,0,'+(1-t/.8)+')';cx.fillRect(0,0,W,H);}}
 
 /* ---------- 📻 RADYO HİKÂYESİ: arama → fotoğraf → eski radyo ---------- */
