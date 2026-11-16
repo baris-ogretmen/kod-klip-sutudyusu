@@ -180,7 +180,7 @@ body.sade #kaydet{font-size:19px;padding:18px}
   <div class="arac"><span>📲 QR ile paylaş</span><button id="qrAc">Göster</button></div>
   <div class="arac"><span>🔗 Linki kopyala</span><button id="linkKopya">Kopyala</button></div>
   <div class="arac"><span>📺 Ekran modu</span><button id="ekranMod">Otomatik</button></div>
-  <div class="arac"><span>🏷️ Sürüm</span><span style="color:var(--soluk)">v19 · 16 Kasım 2026</span></div>
+  <div class="arac"><span>🏷️ Sürüm</span><span style="color:var(--soluk)">v20 · 16 Kasım 2026</span></div>
   <div id="qrKutu"><img id="qrImg" alt="QR"><div style="color:#111;font-size:13px;margin-top:6px" id="qrNot"></div></div>
   <div class="not" style="margin-top:14px">Telif notu: Başkasına ait bir şarkıyı (ör. ünlü sanatçılar) videoya gömersen Instagram/TikTok sesi kapatabilir. Öyle şarkılarda klibi kendi sesinle ya da sessiz yap, şarkıyı uygulamanın müzik kütüphanesinden ekle.</div>
   <button class="btn" id="ayarKapat">Kapat</button>
@@ -937,7 +937,7 @@ document.querySelectorAll('.tema').forEach(b=>b.onclick=()=>{S.tema=b.dataset.te
 function modUygula(){const c=S.mod==='calar';document.getElementById('kapakAyar').style.display='block';document.getElementById('sinemaNot').style.display=S.mod==='sinema'?'block':'none';document.getElementById('aramaKutu').style.display=isRad(S.mod)?'block':'none';if(S.mod==='nokta'||S.mod==='sinema'){}
   document.getElementById('lbBaslik').textContent=c?'Şarkı adı':'Başlık';document.getElementById('lbImza').textContent=c?'Sanatçı':'İmzan';document.getElementById('lbAlt').textContent=c?'Makam / kısa not':'Alt satır';
   document.querySelectorAll('.mod').forEach(b=>b.classList.toggle('secili',b.dataset.mod===S.mod));document.querySelectorAll('.kapak').forEach(b=>b.classList.toggle('secili',b.dataset.k===S.kapak));}
-document.querySelectorAll('.mod').forEach(b=>b.onclick=async()=>{if(calisiyor)return;const once=S.mod;S.mod=b.dataset.mod;modUygula();kaydetAyar();if(S.ham&&(isRad(once))!==(isRad(S.mod)))await S.arkaUygula();ciz(onT);});
+document.querySelectorAll('.mod').forEach(b=>b.onclick=async()=>{if(calisiyor)return;const once=S.mod;S.mod=b.dataset.mod;modUygula();kaydetAyar();if(S.ham&&(isRad(once))!==(isRad(S.mod)))await S.arkaUygula();if(S.canliEl)canliBoyut();ciz(onT);});
 document.querySelectorAll('button.kapak').forEach(b=>b.onclick=()=>{S.kapak=b.dataset.k;modUygula();kaydetAyar();if(!calisiyor)ciz(onT);});
 document.getElementById('kapakDosya').onchange=e=>{const fl=e.target.files[0];if(!fl)return;const im=new Image();im.onload=()=>{S.kapakImg=im;S.kapak='foto';modUygula();if(!calisiyor)ciz(onT);};im.src=URL.createObjectURL(fl);};
 cv.addEventListener('click',e=>{if(S.mod!=='sinema'||!S.kapakImg||calisiyor)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;const K=kbDonus(onT);
@@ -950,14 +950,39 @@ let onT=12;oku();modUygula();ciz(onT);
 $('sesDosya').onchange=async e=>{const fl=e.target.files[0];if(!fl)return;$('sesAdi').textContent='⏳ Ses hazırlanıyor…';
   try{await S.yukle(await fl.arrayBuffer());S.dosyaAdi=fl.name.replace(/\.[^.]+$/,'').toLowerCase().replace(/[^a-z0-9ğüşıöç_]+/g,'_').slice(0,22)+'.m4a';
     $('sesAdi').textContent='✅ '+fl.name+' · '+Math.round(S.dur)+' sn';$('oynat').disabled=false;$('kaydet').disabled=false;$('ikisi').disabled=false;onT=Math.min(12,S.dur/2);ciz(onT);}
-  catch(err){$('sesAdi').textContent='⛔ Bu dosyanın sesi okunamadı. MP3, M4A, WAV ya da MP4 dene.';}};
+  catch(err){try{await canliYukle(fl);S.dosyaAdi='video_sesi.m4a';$('sesAdi').textContent='✅ '+fl.name+' · '+Math.round(S.canliEl.duration)+' sn (video oynatıcıyla)';
+      $('oynat').disabled=false;$('kaydet').disabled=false;$('ikisi').disabled=false;onT=Math.min(12,S.dur/2);ciz(onT);}
+    catch(e2){$('sesAdi').textContent='⛔ Bu dosyanın sesi okunamadı. Başka bir video ya da MP3/M4A dene.';}}};
+/* iPhone videoları (.MOV) için: ses çözülemezse video oynatıcıyla canlı analiz */
+function canliYukle(fl){return new Promise((ok,no)=>{const el=document.createElement('video');el.playsInline=true;el.setAttribute('playsinline','');el.preload='auto';el.src=URL.createObjectURL(fl);
+  const zt=setTimeout(()=>no(new Error('zaman aşımı')),15000);
+  el.onloadedmetadata=()=>{clearTimeout(zt);if(!isFinite(el.duration)||el.duration<=0){no(new Error('süre yok'));return;}
+    S.canliEl=el;S.ham=null;S.buf=null;canliBoyut();ok();};el.onerror=()=>{clearTimeout(zt);no(new Error('oynatılamadı'));};el.load();});}
+function canliBoyut(){const el=S.canliEl;S.dur=el.duration+(isRad(S.mod)?RG:0);const nf=Math.ceil((S.dur+1)*FPS);S.rms=new Float32Array(nf);S.bands=[];for(let i=0;i<nf;i++)S.bands.push(new Float32Array(NB));S.peakR=.05;}
 
 let calisiyor=false,ac=null,kaynak=null,basT=0,raf=0,kayit=null;
-function baslat(hedef){const AC=window.AudioContext||window.webkitAudioContext;ac=new AC();kaynak=ac.createBufferSource();kaynak.buffer=S.buf;
+let canliAn=null,canliSrc=null,canliAC=null;
+function baslat(hedef){if(S.canliEl)return baslatCanli(hedef);const AC=window.AudioContext||window.webkitAudioContext;ac=new AC();kaynak=ac.createBufferSource();kaynak.buffer=S.buf;
   kaynak.connect(ac.destination);if(hedef)kaynak.connect(hedef(ac));basT=ac.currentTime+.15;kaynak.start(basT);calisiyor=true;
   const dongu=()=>{const t=ac.currentTime-basT;ciz(t);$('ilerleme').firstElementChild.style.width=(100*Math.max(0,t)/S.dur)+'%';
     if(t>=S.dur+.2){dur();return;}raf=requestAnimationFrame(dongu);};dongu();$('ilerleme').style.display='block';}
-function dur(){cancelAnimationFrame(raf);calisiyor=false;try{kaynak.stop();}catch(e){}const a=ac;setTimeout(()=>{try{a.close();}catch(e){}},300);
+function baslatCanli(hedef){const AC=window.AudioContext||window.webkitAudioContext;const el=S.canliEl;canliBoyut();
+  if(!canliAC){canliAC=new AC();canliSrc=canliAC.createMediaElementSource(el);canliAn=canliAC.createAnalyser();canliAn.fftSize=2048;canliAn.smoothingTimeConstant=.6;canliSrc.connect(canliAn);canliAn.connect(canliAC.destination);}
+  ac=canliAC;if(ac.state==='suspended')ac.resume();let hedefNode=null;if(hedef){hedefNode=hedef(ac);canliSrc.connect(hedefNode);}S._hedefNode=hedefNode;
+  const gecik=isRad(S.mod)?RG:0;basT=ac.currentTime+.15;
+  if(gecik){const sr=ac.sampleRate,bos=ac.createBuffer(2,Math.round(sr*.05),sr);const sfx=radyoGirisEkle(bos);kaynak=ac.createBufferSource();kaynak.buffer=sfx;kaynak.connect(ac.destination);if(hedefNode)kaynak.connect(hedefNode);kaynak.start(basT);}else kaynak=null;
+  el.pause();el.currentTime=0;S._elBasladi=false;calisiyor=true;
+  const fd=new Uint8Array(canliAn.frequencyBinCount),td=new Float32Array(canliAn.fftSize);const sr=ac.sampleRate,N=canliAn.fftSize;
+  const kenar=[];for(let b=0;b<=NB;b++)kenar.push(Math.max(1,Math.round(60*Math.pow(9000/60,b/NB)/sr*N)));let onceki=new Float32Array(NB);
+  const dongu=()=>{const t=ac.currentTime-basT;
+    if(!S._elBasladi&&t>=gecik-.02){S._elBasladi=true;el.currentTime=Math.max(0,t-gecik);el.play().catch(()=>{});}
+    if(S._elBasladi){canliAn.getFloatTimeDomainData(td);let q=0;for(let i=0;i<N;i++)q+=td[i]*td[i];const r=Math.sqrt(q/N);canliAn.getByteFrequencyData(fd);
+      const bb=new Float32Array(NB);for(let b=0;b<NB;b++){let a=0;const e2=Math.max(kenar[b+1],kenar[b]+1);for(let k=kenar[b];k<e2;k++)a+=fd[k];let v=Math.max(0,(a/(e2-kenar[b])-60)/150);v=v>onceki[b]?v*.7+onceki[b]*.3:onceki[b]*.82+v*.18;bb[b]=Math.min(1,v);}onceki=bb;
+      const f=Math.min(S.rms.length-1,Math.max(0,Math.floor(t*FPS)));S.rms[f]=r;S.bands[f]=bb;S.peakR=Math.max(.02,Math.max(S.peakR*.9995,r));}
+    ciz(t);$('ilerleme').firstElementChild.style.width=(100*Math.max(0,t)/S.dur)+'%';
+    if(t>=S.dur+.2||(S._elBasladi&&el.ended)){dur();return;}raf=requestAnimationFrame(dongu);};dongu();$('ilerleme').style.display='block';}
+function dur(){cancelAnimationFrame(raf);calisiyor=false;try{kaynak&&kaynak.stop();}catch(e){}
+  if(S.canliEl){try{S.canliEl.pause();}catch(e){}try{if(S._hedefNode)canliSrc.disconnect(S._hedefNode);}catch(e){}S._hedefNode=null;}else{const a=ac;setTimeout(()=>{try{a.close();}catch(e){}},300);}
   $('oynat').textContent='▶ Önizle';$('rozet').style.display='none';if(kayit&&kayit.state==='recording')kayit.stop();}
 $('oynat').onclick=()=>{if(calisiyor){dur();return;}oku();$('oynat').textContent='■ Durdur';baslat(null);};
 function kayitYap(){return new Promise((ok,no)=>{
