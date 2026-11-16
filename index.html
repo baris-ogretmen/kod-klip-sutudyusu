@@ -57,6 +57,21 @@ textarea{min-height:110px;resize:vertical;font-family:Menlo,Consolas,monospace;f
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1d1d2c;border:1px solid var(--cizgi);padding:10px 16px;border-radius:12px;font-size:14px;z-index:90;display:none}
 @media print{html{zoom:1!important}}
 </style>
+<style id="sadeCss">
+#sadeUst{display:none}
+body.sade #sadeUst{display:block;background:linear-gradient(135deg,#4c1d95,#0e7490);border-radius:16px;padding:14px 16px;margin:0 0 12px;font-size:15px;line-height:1.55}
+body.sade #sadeUst b{color:#fde68a}
+body.sade .kart{display:none}
+body.sade .kart.sadeGoster{display:block}
+body.sade #kapakAyar>label,body.sade #kapakAyar button.kapak,body.sade #sinemaNot,body.sade #aramaKutu{display:none!important}
+body.sade .secim.mod[data-mod="cini"]{display:none}
+body.sade #sozKart label,body.sade #sozKart input{display:none}
+body.sade #sozKart #sozEtiket{display:block}
+body.sade #oynat{display:none}
+body.sade #ikisi{display:none}
+body.sade #kaydet{font-size:19px;padding:18px}
+#gelismisBtn{display:block;width:100%;margin-top:14px;background:transparent;border:1px dashed var(--cizgi);color:var(--soluk);border-radius:12px;padding:12px;font-size:14px}
+</style>
 </head>
 <body>
 <header>
@@ -165,7 +180,7 @@ textarea{min-height:110px;resize:vertical;font-family:Menlo,Consolas,monospace;f
   <div class="arac"><span>📲 QR ile paylaş</span><button id="qrAc">Göster</button></div>
   <div class="arac"><span>🔗 Linki kopyala</span><button id="linkKopya">Kopyala</button></div>
   <div class="arac"><span>📺 Ekran modu</span><button id="ekranMod">Otomatik</button></div>
-  <div class="arac"><span>🏷️ Sürüm</span><span style="color:var(--soluk)">v17 · 16 Kasım 2026</span></div>
+  <div class="arac"><span>🏷️ Sürüm</span><span style="color:var(--soluk)">v19 · 16 Kasım 2026</span></div>
   <div id="qrKutu"><img id="qrImg" alt="QR"><div style="color:#111;font-size:13px;margin-top:6px" id="qrNot"></div></div>
   <div class="not" style="margin-top:14px">Telif notu: Başkasına ait bir şarkıyı (ör. ünlü sanatçılar) videoya gömersen Instagram/TikTok sesi kapatabilir. Öyle şarkılarda klibi kendi sesinle ya da sessiz yap, şarkıyı uygulamanın müzik kütüphanesinden ekle.</div>
   <button class="btn" id="ayarKapat">Kapat</button>
@@ -369,7 +384,7 @@ function ekran(t,f,amp){
   const ev=cizelge();let aktif=11;
   const liste=bas3().concat(S.sozler);
   let basilmis=0;ev.forEach(e=>{if((e.tip==='bas'||e.tip==='soz')&&t>=e.t)basilmis++;});
-  if(basilmis>0)aktif=11+basilmis;if(t>=ev[ev.length-1].t)aktif=L.length-1;else if(basilmis>=liste.length&&t>ev[ev.length-3].t+2)aktif=12+liste.length+3;
+  if(basilmis>0)aktif=11+basilmis;if(t>=ev[ev.length-1].t)aktif=L.length-1;else if(basilmis>=liste.length&&t>(ev[ev.length-3]||ev[0]).t+2)aktif=12+liste.length+3;
   let bas=Math.max(0,Math.min(L.length-gor,aktif-9));
   ctx.font='21px '+MONO;if(FOTO){ctx.save();ctx.beginPath();ctx.rect(0,48,422,EH);ctx.clip();}
   for(let i=0;i<gor&&bas+i<L.length;i++){const li=bas+i,y=top+i*LH+14;
@@ -523,7 +538,7 @@ function cizCalar(t){t=Math.max(0,Math.min(S.dur,t));const P=paletCalar();const 
   // kod şeridi
   const kodY=ccy+110;cx.fillStyle='rgba(0,0,0,.45)';rr(PX+40,kodY,PW-80,74,18);cx.fill();
   let i=-1;for(let j=0;j<T.length;j++)if(t>=T[j]-1.3)i=j;let kod,kp;
-  if(i<0){kod='kayitlarim.cal("'+S.baslik+'")';kp=Math.min(1,Math.max(0,(t-1)/2.2));}else{kod='soz.yaz("'+L[i]+'")';kp=Math.min(1,Math.max(0,(t-(T[i]-1.3))/1.05));}
+  if(i<0){kod='kayitlarim.cal("'+(S.baslik||'şarkı')+'")';kp=Math.min(1,Math.max(0,(t-1)/2.2));}else{kod='soz.yaz("'+L[i]+'")';kp=Math.min(1,Math.max(0,(t-(T[i]-1.3))/1.05));}
   const kt=kod.slice(0,Math.floor(kod.length*kp));let kfs=29;cx.font=kfs+'px '+MONO;while(cx.measureText(kod).width>PW-180&&kfs>18){kfs--;cx.font=kfs+'px '+MONO;}
   cx.textAlign='left';let xx=PX+70;cx.fillStyle='#7dd3fc';cx.fillText('›',xx,kodY+47);xx+=34;const pI=kt.indexOf('(');
   for(const [m,c] of (pI<0?[[kt,'#c4b5fd']]:[[kt.slice(0,pI),'#c4b5fd'],[kt.slice(pI),'#86efac']])){cx.fillStyle=c;cx.fillText(m,xx,kodY+47);xx+=cx.measureText(m).width;}
@@ -538,7 +553,7 @@ function cizCalar(t){t=Math.max(0,Math.min(S.dur,t));const P=paletCalar();const 
   const alan=ch-340;let off=0;if(blok.length){const son=blok[blok.length-1];const hedef=Math.max(0,son.y+son.parca.length*LH-alan);
     let onceki=0;if(blok.length>1){const s2=blok[blok.length-2];onceki=Math.max(0,s2.y+s2.parca.length*LH-alan);}const pg=Math.min(1,(t-T[akt])/.45);off=onceki+(hedef-onceki)*pg*pg*(3-2*pg);}
   if(!L.length){const sonT=ev[ev.length-1].t;const ga=e*e;cx.globalAlpha=ga;
-    cx.fillStyle='rgba(255,255,255,.9)';cx.font='700 46px '+SANS;cx.fillText('♪ '+((S.alt||'').replace(/^.*?:\s*/,'')||'Kayıtlarım'),PX+90,cy+170);
+    cx.fillStyle='rgba(255,255,255,.9)';cx.font='700 46px '+SANS;cx.fillText('♪ '+((S.alt||'').replace(/^.*?:\s*/,'')||'Şimdi çalıyor'),PX+90,cy+170);
     const mid=cy+ch*.42,bw=(PW-200)/NB;
     for(let b=0;b<NB;b++){const v=bd[b],h=16+v*ch*.3;cx.fillStyle='hsla('+(P.hue+b*4)+',85%,'+(68+v*20)+'%,'+(.55+.45*v)+')';rr(PX+100+b*bw,mid-h/2+60,bw*.62,h,bw*.31);cx.fill();}
     cx.globalAlpha=1;}
@@ -911,7 +926,7 @@ S.fotoYukle=function(src){return new Promise((ok,no)=>{const im=new Image();im.o
 /* ---------- arayüz ---------- */
 const $=id=>document.getElementById(id);
 function toast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(toast.z);toast.z=setTimeout(()=>e.style.display='none',2600);}
-function oku(){S.arama=$('aramaYazi').value.trim();S.kadran=$('kadranYazi').value.trim();S.site=$('siteYazi').value.trim();S.kodArka=$('kodArka').checked;S.baslik=$('baslik').value.trim()||'Kayıtlarım';S.imza=$('imza').value.trim();S.alt=$('altSatir').value.trim();
+function oku(){S.arama=$('aramaYazi').value.trim();S.kadran=$('kadranYazi').value.trim();S.site=$('siteYazi').value.trim();S.kodArka=$('kodArka').checked;S.baslik=$('baslik').value.trim();S.imza=$('imza').value.trim();S.alt=$('altSatir').value.trim();
   const yeni=$('sozler').value.split('\n').map(s=>s.trim()).filter(Boolean);
   if(JSON.stringify(yeni)!==JSON.stringify(S.sozler)){S.sozler=yeni;S.sozZaman=null;$('senkNot').textContent=yeni.length?'Sözler şimdilik şarkıya eşit dağıtılıyor.':'Söz yok — terminalde spektrum çıkacak.';}
   try{localStorage.setItem('kk_ayar3',JSON.stringify({b:S.baslik,i:S.imza,a:S.alt,s:$('sozler').value,t:S.tema,m:S.mod,kp:S.kapak==='foto'?'ay':S.kapak}));}catch(e){}}
@@ -997,6 +1012,33 @@ try{emI=+localStorage.getItem('kk_em')||0;}catch(e){}if(!window.KK_RENDER)emUygu
 $('ekranMod').onclick=()=>{emI=(emI+1)%EM.length;emUygula();};
 window.ZIRVE_ekranReset=()=>{document.documentElement.style.zoom=1;};window.ZIRVE_ekranGeri=emUygula;
 addEventListener('offline',()=>toast('📡 İnternet koptu — Stüdyo yine çalışır, sadece QR için internet gerekir.'));addEventListener('online',()=>toast('✅ İnternet geri geldi'));
+})();
+</script>
+<script>
+(function(){
+function sadeKur(){
+  const kartlar=[...document.querySelectorAll('.kart')];
+  const bul=sel=>{const e=document.querySelector(sel);return e?e.closest('.kart'):null;};
+  [bul('button.mod'),bul('#sesDosya'),bul('#sozler'),bul('#kaydet')].forEach(k=>k&&k.classList.add('sadeGoster'));
+  const sk=bul('#sozler');if(sk){sk.id='sozKart';const h=sk.querySelector('h2');if(h)h.textContent='Sözler (isteğe bağlı)';
+    const et=document.createElement('div');et.id='sozEtiket';et.className='not';et.style.display='none';et.textContent='Yazı istemiyorsan boş bırak. Yazarsan her satır bir dize olur; *yıldız* içindeki kelime vurgulu çıkar.';sk.querySelector('textarea').before(et);}
+  const gk=bul('button.mod');if(gk){const h=gk.querySelector('h2');if(h)h.dataset.eski=h.textContent;}
+  const ust=document.createElement('div');ust.id='sadeUst';ust.innerHTML='<b>1.</b> 🎵 Sesini seç &nbsp; <b>2.</b> 🖼️ İstersen fotoğraf seç<br><b>3.</b> Görünümü seç &nbsp; <b>4.</b> 🎬 Videomu Yap\'a bas, şarkı bitene kadar bekle<br>Site adresin her videoda kendiliğinden çıkar.';
+  document.getElementById('onizleme').before(ust);
+  const kd=document.getElementById('kaydet');kd.dataset.eski=kd.textContent;
+  const btn=document.createElement('button');btn.id='gelismisBtn';document.body.appendChild(btn);
+  // varsayılanlar: kod akışı + ses dalgası açık
+  try{window.KK.dalga=true;const ka=document.getElementById('kodArka');if(ka)ka.checked=true;window.KK.kodArka=true;window.KK.plaka='♪';const bs=document.getElementById('baslik');if(bs&&/^Kayıtlarım/.test(bs.value)){bs.value='';bs.dispatchEvent(new Event('input'));}}catch(e){}
+  function uygula(sade){document.body.classList.toggle('sade',sade);btn.textContent=sade?'⚙️ Gelişmiş ayarlar (tüm seçenekler)':'✨ Sade görünüme dön';
+    kd.textContent=sade?'🎬 Videomu Yap':kd.dataset.eski;const h=gk&&gk.querySelector('h2');if(h)h.textContent=sade?'Görünüm ve fotoğraf':h.dataset.eski;
+    try{localStorage.setItem('kk_sade',sade?'1':'0');}catch(e){}}
+  btn.onclick=()=>{uygula(!document.body.classList.contains('sade'));window.scrollTo(0,0);};
+  let sade=true;try{sade=localStorage.getItem('kk_sade')!=='0';}catch(e){}
+  if(!window.KK_RENDER)uygula(sade);
+  // sade modda fotoğraf seçilince kapak 'foto' olur (zaten öyle); Çini seçiliyse Işıklı Radyo'ya geç
+  if(document.body.classList.contains('sade')&&window.KK.mod==='cini'){const r=document.querySelector('button.mod[data-mod="isikradyo"]');r&&r.click();}
+}
+if(document.readyState==='complete')setTimeout(sadeKur,100);else addEventListener('load',()=>setTimeout(sadeKur,100));
 })();
 </script>
 </body>
